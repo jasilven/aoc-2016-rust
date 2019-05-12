@@ -22,9 +22,9 @@ fn get_path(fname: &str) -> Vec<Point> {
         for _ in 0..dir_steps.1 {
             let mut p = point.clone();
             match facing {
-                0 => p.y += 1,
+                0 => p.y -= 1,
                 1 => p.x += 1,
-                2 => p.y -= 1,
+                2 => p.y += 1,
                 3 => p.x -= 1,
                 _ => panic!("unknown direction: {}", facing),
             };
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn get_path_test() {
         let tv = get_path("resources/day1-test-input.txt"); //[R5, L5, R5, R3]
-        assert_eq!(tv.last().unwrap(), &Point { x: 10, y: 2 });
+        assert_eq!(tv.last().unwrap(), &Point { x: 10, y: -2 });
     }
 
     #[test]
