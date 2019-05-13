@@ -8,8 +8,8 @@ fn valid_triangle((a, b, c): (i32, i32, i32)) -> bool {
 fn solve(vec: Vec<Vec<String>>) -> i32 {
     let mut result = 0;
     for cs in vec.iter() {
-        let col: Vec<i32> = cs.iter().map(|s| s.parse::<i32>().unwrap()).collect();
-        for chu in col.chunks(3) {
+        let nums: Vec<i32> = cs.iter().map(|s| s.parse::<i32>().unwrap()).collect();
+        for chu in nums.chunks(3) {
             result += valid_triangle((chu[0], chu[1], chu[2])) as i32;
         }
     }
