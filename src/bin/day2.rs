@@ -12,13 +12,13 @@ fn key_for_val(hm: &HashMap<Point, char>, val: &char) -> Point {
 }
 
 fn solve(fname: &str, kpfname: &str) -> String {
-    let keypad = parse_map(kpfname, &[' ']);
+    let keypad = parse_map(kpfname, &[' ']).expect("unable to parse keypad file");
     let mut point = key_for_val(&keypad, &'5');
     let mut code = String::new();
 
     for line in slurp(fname).expect("cannot read input file").lines() {
         for ch in line.chars() {
-            let p = move_point(&point, ch, 1);
+            let p = move_point(&point, ch, 1).expect("cannot move point");
             if keypad.contains_key(&p) {
                 point = p;
             }

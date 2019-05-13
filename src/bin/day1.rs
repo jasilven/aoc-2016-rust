@@ -18,7 +18,7 @@ fn get_path(fname: &str) -> Vec<Point> {
     let mut facing = 0;
     let mut point = Point::origin();
     for dir_steps in parse_input(fname) {
-        facing = turn(&facing, dir_steps.0);
+        facing = turn(&facing, dir_steps.0).expect("unable to turn");
         for _ in 0..dir_steps.1 {
             let mut p = point.clone();
             match facing {
