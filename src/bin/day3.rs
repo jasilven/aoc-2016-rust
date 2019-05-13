@@ -1,5 +1,5 @@
 mod aoc;
-use aoc::*;
+use aoc::Matrix;
 
 fn valid_triangle((a, b, c): (i32, i32, i32)) -> bool {
     (a + b > c) & (a + c > b) & (b + c > a)
