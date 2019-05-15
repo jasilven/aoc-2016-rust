@@ -1,23 +1,23 @@
 mod aoc;
 use aoc::*;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
 
-fn key_for_val(hm: &HashMap<Point, char>, val: &char) -> Point {
-    for (k, v) in hm {
-        if val == v {
-            return k.clone();
-        }
-    }
-    panic!("cannot find key for value: {}", val);
+fn find_first_by_key<K, V: PartialEq<char>>(hm: &HashMap<K, V>, val: char) -> Option<(&K, &V)> {
+    hm.iter().filter(|(_, c)| *c == &val).next()
 }
 
 fn solve(fname: &str, kpfname: &str) -> String {
     let keypad = parse_map(kpfname, &[' ']).expect("unable to parse keypad file");
-    let mut point = key_for_val(&keypad, &'5');
+    let mut point = find_first_by_key(&keypad, '5')
+        .expect("key not found for value")
+        .0
+        .clone();
     let mut code = String::new();
-
-    for line in slurp(fname).expect("cannot read input file").lines() {
-        for ch in line.chars() {
+    for line in BufReader::new(File::open(&fname).unwrap()).lines() {
+        for ch in line.unwrap().chars() {
             let p = move_point(&point, ch, 1).expect("cannot move point");
             if keypad.contains_key(&p) {
                 point = p;
@@ -41,7 +41,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_test() {
+    fn test_part1() {
         assert_eq!(
             "1985",
             solve(
@@ -52,7 +52,7 @@ mod tests {
     }
 
     #[test]
-    fn part2_test() {
+    fn test_part2() {
         assert_eq!(
             "5DB3",
             solve(

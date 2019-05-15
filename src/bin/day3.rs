@@ -17,9 +17,11 @@ fn solve(vec: Vec<Vec<String>>) -> i32 {
 }
 
 fn main() {
-    let mat = Matrix::parse_matrix("resources/day3-input.txt").expect("parse error");
+    let mat = Matrix::parse_matrix("resources/day3-input.txt").expect("input parse error");
     println!("Part 1: {}", solve(mat.rows()));
+    // correct answer: 917
     println!("Part 2: {}", solve(mat.cols().unwrap()));
+    // correct answer: 1649
 }
 
 #[cfg(test)]
@@ -27,7 +29,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn valid_triangle_test() {
+    fn test_valid_triangle() {
         assert_eq!(false, valid_triangle((5, 10, 25)));
         assert_eq!(true, valid_triangle((5, 5, 5)));
     }

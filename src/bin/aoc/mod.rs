@@ -1,17 +1,9 @@
-#[allow(dead_code)]
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Read;
-
-pub fn slurp(fname: &str) -> Result<String, std::io::Error> {
-    let mut data = String::new();
-    let mut file = File::open(fname)?;
-    file.read_to_string(&mut data)?;
-    Ok(data)
-}
 
 pub fn manh_dist(a: &Point, b: &Point) -> i32 {
     (a.x - b.x).abs() + (a.y - b.y).abs()
@@ -42,8 +34,9 @@ pub fn parse_map(fname: &str, discard: &[char]) -> Result<HashMap<Point, char>, 
     let mut keypad = HashMap::new();
     let mut x = 0i32;
     let mut y = 0i32;
-    for line in slurp(fname)?.lines() {
-        for ch in line.chars() {
+
+    for line in BufReader::new(File::open(fname)?).lines() {
+        for ch in line.unwrap().chars() {
             if !discard.contains(&ch) {
                 keypad.insert(Point { x: x, y: y }, ch);
             }
@@ -128,14 +121,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn slurp_test() {
-        let s = slurp("src/bin/aoc/mod.rs");
-        assert!(s.is_ok());
-        assert!(!s.unwrap().is_empty());
-    }
-
-    #[test]
-    fn turn_test_lr() {
+    fn test_turn_lr() {
         assert_eq!(1, turn(&0, 'R').unwrap());
         assert_eq!(3, turn(&0, 'L').unwrap());
         assert_eq!(2, turn(&1, 'R').unwrap());
@@ -147,14 +133,14 @@ mod tests {
     }
 
     #[test]
-    fn manh_dist_test() {
+    fn test_manh_dist() {
         assert_eq!(2, manh_dist(&Point::origin(), &Point { x: 1, y: 1 }));
         assert_eq!(4, manh_dist(&Point { x: -1, y: -1 }, &Point { x: 1, y: 1 }));
         assert_eq!(3, (Point { x: 3, y: 0 }).manh_dist());
     }
 
     #[test]
-    fn move_point_test() {
+    fn test_move_point() {
         assert_eq!(
             Point { x: 0, y: -1 },
             move_point(&Point { x: 0, y: 0 }, 'N', 1).unwrap()
@@ -194,7 +180,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_map_test() {
+    fn test_parse_map() {
         let hm = parse_map("resources/day2-keypad1.txt", &[]).unwrap();
         assert_eq!(hm.get(&Point { x: 2, y: 2 }).unwrap(), &'9');
         let hm2 = parse_map("resources/day2-keypad2.txt", &[]).unwrap();
