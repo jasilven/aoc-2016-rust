@@ -3,7 +3,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
-use std::io::Read;
 
 pub fn manh_dist(a: &Point, b: &Point) -> i32 {
     (a.x - b.x).abs() + (a.y - b.y).abs()
@@ -71,8 +70,8 @@ impl Matrix {
 
     pub fn column(&self, col: usize) -> Option<Vec<String>> {
         let mut result: Vec<String> = vec![];
-        for row in 0..self.data.len() {
-            result.push(self.data.get(row)?.get(col)?.clone());
+        for row in self.data.iter() {
+            result.push(row[col].clone());
         }
         match result.is_empty() {
             true => None,
@@ -86,7 +85,7 @@ impl Matrix {
 
     pub fn cols(&self) -> Option<Vec<Vec<String>>> {
         let mut result: Vec<Vec<String>> = vec![];
-        for c in 0..self.row(0)?.len() {
+        for c in 0..self.data[0].len() {
             result.push(self.column(c)?);
         }
         Some(result)
