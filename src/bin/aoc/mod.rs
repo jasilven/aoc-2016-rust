@@ -115,6 +115,31 @@ impl Point {
     }
 }
 
+/// palindrome predicate, where e.g. ABA,ABBA are palindromes but AAA or AA are not
+pub fn is_palindrome(word: &str) -> bool {
+    match word.len() {
+        0 => false,
+        1 => true,
+        _ => {
+            (word == word.chars().rev().collect::<String>())
+                & (word.chars().nth(0).unwrap() != word.chars().nth(1).unwrap())
+        }
+    }
+}
+
+/// partitions s to step size chunks. chunks may overlap.
+pub fn partition_by(s: &str, step: usize) -> Vec<String> {
+    if step >= s.len() {
+        return vec![String::from(s)];
+    }
+    let s = s.chars().collect::<Vec<char>>();
+    let mut result: Vec<String> = vec![];
+    for n in 0..=(s.len() - step) {
+        result.push(s[n..(n + step)].iter().collect::<String>());
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -184,5 +209,24 @@ mod tests {
         assert_eq!(hm.get(&Point { x: 2, y: 2 }).unwrap(), &'9');
         let hm2 = parse_map("resources/day2-keypad2.txt", &[]).unwrap();
         assert_eq!(hm2.get(&Point { x: 2, y: 4 }).unwrap(), &'D');
+    }
+
+    #[test]
+    fn test_partition_by() {
+        assert_eq!(vec!["mo", "oi"], partition_by("moi", 2));
+        assert_eq!(vec!["moi"], partition_by("moi", 3));
+    }
+
+    #[test]
+    fn test_palindrome() {
+        assert_eq!(true, is_palindrome("abba"));
+        assert_eq!(false, is_palindrome("acba"));
+        assert_eq!(true, is_palindrome("aba"));
+        assert_eq!(true, is_palindrome("bab"));
+        assert_eq!(false, is_palindrome("bba"));
+        assert_eq!(false, is_palindrome("aa"));
+        assert_eq!(false, is_palindrome("aaa"));
+        assert_eq!(false, is_palindrome(""));
+        assert_eq!(true, is_palindrome("a"));
     }
 }
