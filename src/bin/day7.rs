@@ -48,8 +48,12 @@ fn aba_to_bab(aba: &str) -> String {
     if aba.len() != 3 {
         panic!("input length not 3");
     }
-    let v = aba.chars().collect::<Vec<char>>();
-    vec![v[1], v[0], v[1]].iter().collect::<String>()
+    format!(
+        "{}{}{}",
+        aba.get(1..2).unwrap(),
+        aba.get(0..1).unwrap(),
+        aba.get(1..2).unwrap()
+    )
 }
 
 fn solve2(fname: &str) -> i32 {
