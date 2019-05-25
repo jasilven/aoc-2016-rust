@@ -1,9 +1,9 @@
 extern crate regex;
 use regex::Regex;
 
-fn parse_marker(slice: &str) -> (usize, usize, usize) {
+fn parse_marker(data: &str) -> (usize, usize, usize) {
     let re: Regex = Regex::new(r"^\((\d+)x(\d+)\)").expect("invalid regex");
-    let cap = re.captures(&slice).unwrap();
+    let cap = re.captures(&data).unwrap();
     (
         cap[0].len(),
         cap[1].parse::<usize>().unwrap(),
@@ -11,19 +11,19 @@ fn parse_marker(slice: &str) -> (usize, usize, usize) {
     )
 }
 
-fn solve(slice: &str, recursive: bool) -> usize {
+fn solve(data: &str, recursive: bool) -> usize {
     let mut cnt = 0;
-    for n in 0..slice.len() {
-        if &slice[n..n + 1] == "(" {
-            let (marker_len, ch_cnt, repeat_cnt) = parse_marker(&slice[n..slice.len()]);
+    for n in 0..data.len() {
+        if &data[n..n + 1] == "(" {
+            let (marker_len, ch_cnt, repeat_cnt) = parse_marker(&data[n..data.len()]);
             let low = n + marker_len;
             let high = low + ch_cnt;
             if recursive {
                 return cnt
-                    + solve(&slice[high..slice.len()], true)
-                    + repeat_cnt * solve(&slice[low..high], true);
+                    + solve(&data[high..data.len()], true)
+                    + repeat_cnt * solve(&data[low..high], true);
             }
-            return cnt + solve(&slice[high..slice.len()], false) + repeat_cnt * ch_cnt;
+            return cnt + solve(&data[high..data.len()], false) + repeat_cnt * ch_cnt;
         } else {
             cnt += 1;
         }
