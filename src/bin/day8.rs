@@ -54,9 +54,15 @@ fn execute(fname: &str, rows: usize, cols: usize) -> Vec<Vec<char>> {
         let line: String = line.expect("line parse error");
         let nums = parse_ints(&line);
         match true {
-            true if line.starts_with("rotate column") => rotate_col(&mut matrix, nums[0], nums[1]),
-            true if line.starts_with("rotate row") => rotate_row(&mut matrix, nums[0], nums[1]),
-            true if line.starts_with("rect") => rect(&mut matrix, nums[0], nums[1]),
+            true if line.starts_with("rotate column") => {
+                rotate_col(&mut matrix, nums[0] as usize, nums[1] as usize)
+            }
+            true if line.starts_with("rotate row") => {
+                rotate_row(&mut matrix, nums[0] as usize, nums[1] as usize)
+            }
+            true if line.starts_with("rect") => {
+                rect(&mut matrix, nums[0] as usize, nums[1] as usize)
+            }
             _ => panic!("input data error"),
         }
     }
