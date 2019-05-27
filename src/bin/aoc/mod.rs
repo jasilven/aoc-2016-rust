@@ -1,13 +1,18 @@
+#[allow(dead_code)]
+extern crate regex;
+use regex::Regex;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
+#[allow(dead_code)]
 pub fn manh_dist(a: &Point, b: &Point) -> i32 {
     (a.x - b.x).abs() + (a.y - b.y).abs()
 }
 
+#[allow(dead_code)]
 pub fn turn(facing: &i32, ch: char) -> Result<i32, String> {
     let result = match ch {
         'L' => (*facing + 3) % 4,
@@ -17,6 +22,7 @@ pub fn turn(facing: &i32, ch: char) -> Result<i32, String> {
     Ok(result)
 }
 
+#[allow(dead_code)]
 pub fn move_point(p: &Point, ch: char, steps: i32) -> Result<Point, String> {
     let mut point = p.clone();
     match ch {
@@ -29,6 +35,7 @@ pub fn move_point(p: &Point, ch: char, steps: i32) -> Result<Point, String> {
     Ok(point)
 }
 
+#[allow(dead_code)]
 pub fn parse_map(fname: &str, discard: &[char]) -> Result<HashMap<Point, char>, Box<Error>> {
     let mut keypad = HashMap::new();
     let mut x = 0i32;
@@ -53,6 +60,7 @@ pub struct Matrix {
 }
 
 impl Matrix {
+    #[allow(dead_code)]
     pub fn parse_matrix(fname: &str) -> Result<Matrix, Box<Error>> {
         let mut mat: Vec<Vec<String>> = vec![];
         let file = File::open(fname)?;
@@ -63,12 +71,13 @@ impl Matrix {
         Ok(Matrix { data: mat })
     }
 
-    pub fn new() -> Matrix {
-        let rows: Vec<String> = vec![];
-        Matrix { data: vec![rows] }
-    }
+    // pub fn new() -> Matrix {
+    //     let rows: Vec<String> = vec![];
+    //     Matrix { data: vec![rows] }
+    // }
 
-    pub fn column(&self, col: usize) -> Option<Vec<String>> {
+    #[allow(dead_code)]
+    fn column(&self, col: usize) -> Option<Vec<String>> {
         let mut result: Vec<String> = vec![];
         for row in self.data.iter() {
             result.push(row[col].clone());
@@ -79,10 +88,12 @@ impl Matrix {
         }
     }
 
+    #[allow(dead_code)]
     pub fn rows(&self) -> Vec<Vec<String>> {
         self.data.clone()
     }
 
+    #[allow(dead_code)]
     pub fn cols(&self) -> Option<Vec<Vec<String>>> {
         let mut result: Vec<Vec<String>> = vec![];
         for c in 0..self.data[0].len() {
@@ -91,13 +102,13 @@ impl Matrix {
         Some(result)
     }
 
-    pub fn row(&self, row: usize) -> Option<Vec<String>> {
-        Some(self.data.get(row)?.to_vec())
-    }
+    // pub fn row(&self, row: usize) -> Option<Vec<String>> {
+    //     Some(self.data.get(row)?.to_vec())
+    // }
 
-    pub fn cell(&self, (row, col): (i32, i32)) -> String {
-        self.data[row as usize][col as usize].clone()
-    }
+    // pub fn cell(&self, (row, col): (i32, i32)) -> String {
+    //     self.data[row as usize][col as usize].clone()
+    // }
 }
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone)]
@@ -107,15 +118,18 @@ pub struct Point {
 }
 
 impl Point {
+    #[allow(dead_code)]
     pub fn origin() -> Point {
         Point { x: 0, y: 0 }
     }
+    #[allow(dead_code)]
     pub fn manh_dist(&self) -> i32 {
         manh_dist(self, &Self::origin())
     }
 }
 
 /// palindrome predicate, where e.g. ABA,ABBA are palindromes but AAA or AA are not
+#[allow(dead_code)]
 pub fn is_palindrome(word: &str) -> bool {
     match word.len() {
         0 => false,
@@ -128,6 +142,7 @@ pub fn is_palindrome(word: &str) -> bool {
 }
 
 /// partitions s to step size chunks. chunks may overlap.
+#[allow(dead_code)]
 pub fn partition_by(s: &str, step: usize) -> Vec<String> {
     if step >= s.len() {
         return vec![String::from(s)];
@@ -140,9 +155,25 @@ pub fn partition_by(s: &str, step: usize) -> Vec<String> {
     result
 }
 
+#[allow(dead_code)]
+pub fn parse_ints(s: &str) -> Vec<isize> {
+    let re = Regex::new(r"(-?\d+)").expect("invalid regex");
+    let nums: Vec<isize> = re
+        .captures_iter(&s)
+        .map(|x| x[1].parse::<isize>().expect("parse error"))
+        .collect();
+    nums
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_parse_ints() {
+        assert_eq!(vec![23], parse_ints("dkdkdk23 ddkk"));
+        assert_eq!(vec![-2, 11], parse_ints("-2 kkh11ddkk"));
+    }
 
     #[test]
     fn test_turn_lr() {
