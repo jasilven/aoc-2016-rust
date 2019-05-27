@@ -207,8 +207,7 @@ fn main() {
                     outs = os;
                 }
                 Rule::None => {
-                    println!("None rule!!");
-                    break;
+                    panic!("No rule!!");
                 }
             },
             None => break,
