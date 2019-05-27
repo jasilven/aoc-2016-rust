@@ -118,3 +118,14 @@ fn main() {
     println!("Part 2: {}", &solve2(&prog));
     // correct answer: 9227663
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_solve1() {
+        let prog = parse_assembunny("resources/day12-test-input.txt");
+        assert_eq!(42, solve1(&prog));
+    }
+}
