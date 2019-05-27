@@ -23,6 +23,12 @@ struct Bot {
 }
 
 impl Bot {
+    pub fn new(rule: Rule, chips: Vec<usize>) -> Bot {
+        Bot {
+            rule: rule,
+            chips: chips,
+        }
+    }
     pub fn max_chip(&self) -> Option<&usize> {
         self.chips.iter().max()
     }
@@ -33,27 +39,17 @@ impl Bot {
 
 fn assign_val(b: usize, val: usize, bots: &mut HashMap<usize, Bot>) {
     if bots.contains_key(&b) {
-        let bot = bots.get_mut(&b).unwrap();
-        bot.chips.push(val);
+        bots.get_mut(&b).unwrap().chips.push(val);
     } else {
-        let bot = Bot {
-            rule: Rule::None,
-            chips: vec![val],
-        };
-        bots.insert(b, bot);
+        bots.insert(b, Bot::new(Rule::None, vec![val]));
     }
 }
 
 fn assign_rule(b: usize, rule: Rule, bots: &mut HashMap<usize, Bot>) {
     if bots.contains_key(&b) {
-        let bot = bots.get_mut(&b).unwrap();
-        bot.rule = rule;
+        bots.get_mut(&b).unwrap().rule = rule;
     } else {
-        let bot = Bot {
-            rule: rule,
-            chips: vec![],
-        };
-        bots.insert(b, bot);
+        bots.insert(b, Bot::new(rule, vec![]));
     }
 }
 
