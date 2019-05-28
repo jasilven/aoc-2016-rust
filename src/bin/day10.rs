@@ -29,11 +29,16 @@ impl Bot {
             chips: chips,
         }
     }
-    pub fn max_chip(&self) -> Option<&usize> {
-        self.chips.iter().max()
-    }
-    pub fn min_chip(&self) -> Option<&usize> {
-        self.chips.iter().min()
+
+    pub fn pop_chips(&mut self) -> Option<(usize, usize)> {
+        let min = self.chips.iter().min();
+        let max = self.chips.iter().max();
+        let result = match (min, max) {
+            (Some(min), Some(max)) => Some((*min, *max)),
+            _ => None,
+        };
+        self.chips.clear();
+        result
     }
 }
 
@@ -94,72 +99,6 @@ fn parse_input(fname: &str) -> HashMap<usize, Bot> {
     bots
 }
 
-fn bot_bot(bots: &HashMap<usize, Bot>, b: usize, (l, h): (usize, usize)) -> HashMap<usize, Bot> {
-    let mut bots = bots.clone();
-    let mut bot = bots.get(&b).unwrap().clone();
-    let mut bot_hi = bots.get(&h).unwrap().clone();
-    let mut bot_low = bots.get(&l).unwrap().clone();
-    bot_hi.chips.push(*bot.max_chip().unwrap());
-    bot_low.chips.push(*bot.min_chip().unwrap());
-    bots.insert(l, bot_low);
-    bots.insert(h, bot_hi);
-    bot.chips.clear();
-    bots.insert(b, bot);
-    bots
-}
-
-fn bot_out(
-    bots: &HashMap<usize, Bot>,
-    outs: &HashMap<usize, usize>,
-    b: usize,
-    (l, h): (usize, usize),
-) -> (HashMap<usize, Bot>, HashMap<usize, usize>) {
-    let mut bots = bots.clone();
-    let mut outs = outs.clone();
-    let mut bot = bots.get(&b).unwrap().clone();
-    let mut bot_low = bots.get(&l).unwrap().clone();
-    outs.insert(h, *bot.max_chip().unwrap());
-    bot_low.chips.push(*bot.min_chip().unwrap());
-    bot.chips.clear();
-    bots.insert(l, bot_low);
-    bots.insert(b, bot);
-    (bots, outs)
-}
-
-fn out_bot(
-    bots: &HashMap<usize, Bot>,
-    outs: &HashMap<usize, usize>,
-    b: usize,
-    (l, h): (usize, usize),
-) -> (HashMap<usize, Bot>, HashMap<usize, usize>) {
-    let mut bots = bots.clone();
-    let mut outs = outs.clone();
-    let mut bot = bots.get(&b).unwrap().clone();
-    let mut bot_hi = bots.get(&h).unwrap().clone();
-    outs.insert(l, *bot.min_chip().unwrap());
-    bot_hi.chips.push(*bot.max_chip().unwrap());
-    bots.insert(h, bot_hi);
-    bot.chips.clear();
-    bots.insert(b, bot);
-    (bots, outs)
-}
-
-fn out_out(
-    bots: &HashMap<usize, Bot>,
-    outs: &HashMap<usize, usize>,
-    b: usize,
-    (l, h): (usize, usize),
-) -> (HashMap<usize, Bot>, HashMap<usize, usize>) {
-    let mut bots = bots.clone();
-    let mut outs = outs.clone();
-    let mut bot = bots.get_mut(&b).unwrap().clone();
-    outs.insert(l, *bot.min_chip().unwrap());
-    outs.insert(h, *bot.max_chip().unwrap());
-    bot.chips.clear();
-    bots.insert(b, bot);
-    (bots, outs)
-}
-
 fn solve1(bots: &HashMap<usize, Bot>) -> Option<usize> {
     match bots
         .iter()
@@ -184,29 +123,35 @@ fn main() {
         if part1 == None {
             part1 = solve1(&bots);
         }
-        match bots.iter().filter(|(_, v)| v.chips.len() == 2).nth(0) {
-            Some(kv) => match kv.1.rule {
-                Rule::BotBot(lh) => bots = bot_bot(&bots, *kv.0, lh),
-                Rule::OutBot(lh) => {
-                    let (bs, os) = out_bot(&bots, &outs, *kv.0, lh);
-                    bots = bs;
-                    outs = os;
+        if let Some((id, b)) = bots.iter().filter(|(_, v)| v.chips.len() == 2).nth(0) {
+            let id = *id;
+            match b.rule {
+                Rule::BotBot((l, h)) => {
+                    let (min, max) = bots.get_mut(&id).unwrap().pop_chips().unwrap();
+                    bots.entry(h).and_modify(|b| b.chips.push(max));
+                    bots.entry(l).and_modify(|b| b.chips.push(min));
                 }
-                Rule::OutOut(lh) => {
-                    let (bs, os) = out_out(&bots, &outs, *kv.0, lh);
-                    bots = bs;
-                    outs = os;
+                Rule::OutBot((l, h)) => {
+                    let (min, max) = bots.get_mut(&id).unwrap().pop_chips().unwrap();
+                    bots.entry(h).and_modify(|b| b.chips.push(max));
+                    outs.insert(l, min);
                 }
-                Rule::BotOut(lh) => {
-                    let (bs, os) = bot_out(&bots, &outs, *kv.0, lh);
-                    bots = bs;
-                    outs = os;
+                Rule::OutOut((l, h)) => {
+                    let (min, max) = bots.get_mut(&id).unwrap().pop_chips().unwrap();
+                    outs.insert(l, min);
+                    outs.insert(h, max);
+                }
+                Rule::BotOut((l, h)) => {
+                    let (min, max) = bots.get_mut(&id).unwrap().pop_chips().unwrap();
+                    outs.insert(h, max);
+                    bots.entry(l).and_modify(|b| b.chips.push(min));
                 }
                 Rule::None => {
                     panic!("No rule!!");
                 }
-            },
-            None => break,
+            };
+        } else {
+            break;
         }
     }
     println!("Part 1: {}", part1.unwrap());
