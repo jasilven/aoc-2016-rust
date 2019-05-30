@@ -1,6 +1,7 @@
 #[allow(dead_code)]
 extern crate regex;
 use regex::Regex;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
@@ -119,12 +120,30 @@ pub struct Point {
 
 impl Point {
     #[allow(dead_code)]
+    pub fn new(x: i32, y: i32) -> Point {
+        Point { x, y }
+    }
+
+    #[allow(dead_code)]
     pub fn origin() -> Point {
         Point { x: 0, y: 0 }
     }
     #[allow(dead_code)]
     pub fn manh_dist(&self) -> i32 {
         manh_dist(self, &Self::origin())
+    }
+}
+
+impl Ord for Point {
+    fn cmp(&self, other: &Point) -> Ordering {
+        self.manh_dist().cmp(&other.manh_dist())
+    }
+
+}
+
+impl PartialOrd for Point {
+    fn partial_cmp(&self, other: &Point) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -168,6 +187,15 @@ pub fn parse_ints(s: &str) -> Vec<isize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_point_cmp() {
+        let p1 = Point::new(1, 1);
+        let p2 = Point::new(2, 2);
+        let p3 = Point::new(-1, -1);
+        assert_eq!(Ordering::Less, p1.cmp(&p2));
+        assert_eq!(Ordering::Equal, p1.cmp(&p3));
+    }
 
     #[test]
     fn test_parse_ints() {
