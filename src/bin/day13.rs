@@ -54,7 +54,7 @@ impl Map {
     }
 
     #[allow(dead_code)]
-    pub fn write_map(&mut self, writer: &mut Write, mx: i32, my: i32) {
+    pub fn write_map<T: Write>(&mut self, writer: &mut T, mx: i32, my: i32) {
         for y in 0..=my {
             for x in 0..=mx {
                 match self.is_open(&Point::new(x, y)) {
