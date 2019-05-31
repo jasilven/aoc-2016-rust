@@ -76,17 +76,21 @@ mod tests {
             format!("{:x}", md5::compute("abc3231929")).starts_with("00000")
         );
     }
+
     #[test]
+    #[ignore]
     fn test_part1() {
         assert_eq!("18f47a30", solve1("abc"));
     }
 
     #[test]
+    #[ignore]
     fn test_part2_functional() {
         assert_eq!("05ace8e3", solve2_functional("abc"));
     }
 
     #[test]
+    #[ignore]
     fn test_part2_imperative() {
         assert_eq!("05ace8e3", solve2_imperative("abc"));
     }

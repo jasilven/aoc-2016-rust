@@ -1,11 +1,10 @@
-use aoc::Point;
+mod aoc;
+use aoc::point::Point;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::Write;
-
-mod aoc;
 
 struct Map {
     favnum: i32,

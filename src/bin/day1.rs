@@ -1,5 +1,6 @@
 mod aoc;
-use aoc::{turn, Point};
+use aoc::point::Point;
+use aoc::turn;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::Read;
@@ -21,7 +22,7 @@ fn parse_input(fname: &str) -> Vec<(char, i32)> {
 fn get_path(fname: &str) -> Vec<Point> {
     let mut path = Vec::new();
     let mut facing = 0;
-    let mut point = Point::origin();
+    let mut point = Point { x: 0, y: 0 };
     for dir_steps in parse_input(fname) {
         facing = turn(&facing, dir_steps.0).expect("turn error");
         for _ in 0..dir_steps.1 {
@@ -42,14 +43,14 @@ fn get_path(fname: &str) -> Vec<Point> {
 
 fn solve1(fname: &str) -> i32 {
     let path = get_path(fname);
-    path.last().unwrap().manh_dist()
+    path.last().unwrap().manh_dist(&Point::new(0, 0))
 }
 
 fn solve2(fname: &str) -> i32 {
     let mut seen = HashSet::new();
     for point in get_path(fname) {
         if seen.contains(&point) {
-            return point.manh_dist();
+            return point.manh_dist(&Point { x: 0, y: 0 });
         } else {
             seen.insert(point);
         }

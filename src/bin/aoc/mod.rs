@@ -1,17 +1,13 @@
 #[allow(dead_code)]
 extern crate regex;
+use point::Point;
 use regex::Regex;
-use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
-
-#[allow(dead_code)]
-pub fn manh_dist(a: &Point, b: &Point) -> i32 {
-    (a.x - b.x).abs() + (a.y - b.y).abs()
-}
+pub mod point;
 
 #[allow(dead_code)]
 pub fn turn(facing: &i32, ch: char) -> Result<i32, String> {
@@ -72,11 +68,6 @@ impl Matrix {
         Ok(Matrix { data: mat })
     }
 
-    // pub fn new() -> Matrix {
-    //     let rows: Vec<String> = vec![];
-    //     Matrix { data: vec![rows] }
-    // }
-
     #[allow(dead_code)]
     fn column(&self, col: usize) -> Option<Vec<String>> {
         let mut result: Vec<String> = vec![];
@@ -101,49 +92,6 @@ impl Matrix {
             result.push(self.column(c)?);
         }
         Some(result)
-    }
-
-    // pub fn row(&self, row: usize) -> Option<Vec<String>> {
-    //     Some(self.data.get(row)?.to_vec())
-    // }
-
-    // pub fn cell(&self, (row, col): (i32, i32)) -> String {
-    //     self.data[row as usize][col as usize].clone()
-    // }
-}
-
-#[derive(Debug, Hash, Eq, PartialEq, Clone)]
-pub struct Point {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl Point {
-    #[allow(dead_code)]
-    pub fn new(x: i32, y: i32) -> Point {
-        Point { x, y }
-    }
-
-    #[allow(dead_code)]
-    pub fn origin() -> Point {
-        Point { x: 0, y: 0 }
-    }
-    #[allow(dead_code)]
-    pub fn manh_dist(&self) -> i32 {
-        manh_dist(self, &Self::origin())
-    }
-}
-
-impl Ord for Point {
-    fn cmp(&self, other: &Point) -> Ordering {
-        self.manh_dist().cmp(&other.manh_dist())
-    }
-
-}
-
-impl PartialOrd for Point {
-    fn partial_cmp(&self, other: &Point) -> Option<Ordering> {
-        Some(self.cmp(other))
     }
 }
 
@@ -189,15 +137,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_point_cmp() {
-        let p1 = Point::new(1, 1);
-        let p2 = Point::new(2, 2);
-        let p3 = Point::new(-1, -1);
-        assert_eq!(Ordering::Less, p1.cmp(&p2));
-        assert_eq!(Ordering::Equal, p1.cmp(&p3));
-    }
-
-    #[test]
     fn test_parse_ints() {
         assert_eq!(vec![23], parse_ints("dkdkdk23 ddkk"));
         assert_eq!(vec![-2, 11], parse_ints("-2 kkh11ddkk"));
@@ -213,13 +152,6 @@ mod tests {
         assert_eq!(1, turn(&2, 'L').unwrap());
         assert_eq!(0, turn(&3, 'R').unwrap());
         assert_eq!(2, turn(&3, 'L').unwrap());
-    }
-
-    #[test]
-    fn test_manh_dist() {
-        assert_eq!(2, manh_dist(&Point::origin(), &Point { x: 1, y: 1 }));
-        assert_eq!(4, manh_dist(&Point { x: -1, y: -1 }, &Point { x: 1, y: 1 }));
-        assert_eq!(3, (Point { x: 3, y: 0 }).manh_dist());
     }
 
     #[test]
