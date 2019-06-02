@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::cmp::Ordering;
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone)]
@@ -6,19 +7,38 @@ pub struct Point {
     pub y: i32,
 }
 
-#[allow(dead_code)]
 pub fn manh_dist(a: &Point, b: &Point) -> i32 {
     (a.x - b.x).abs() + (a.y - b.y).abs()
 }
+
+pub fn move_point(p: &Point, ch: char, steps: i32) -> Result<Point, String> {
+    let mut point = p.clone();
+    match ch {
+        'U' | 'N' => point.y -= steps,
+        'R' | 'E' => point.x += steps,
+        'D' | 'S' => point.y += steps,
+        'L' | 'W' => point.x -= steps,
+        _ => return Err(format!("unknown direction: {}", ch)),
+    };
+    Ok(point)
+}
+
 impl Point {
-    #[allow(dead_code)]
     pub fn new(x: i32, y: i32) -> Point {
         Point { x, y }
     }
 
-    #[allow(dead_code)]
     pub fn manh_dist(&self, other: &Point) -> i32 {
         (self.x - other.x).abs() + (self.y - other.y).abs()
+    }
+
+    pub fn neighbours(&mut self) -> Vec<Point> {
+        vec![
+            Point::new(self.x, self.y - 1),
+            Point::new(self.x, self.y + 1),
+            Point::new(self.x - 1, self.y),
+            Point::new(self.x + 1, self.y),
+        ]
     }
 }
 

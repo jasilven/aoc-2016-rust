@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
 extern crate regex;
 use point::Point;
 use regex::Regex;
@@ -9,7 +9,6 @@ use std::io::BufRead;
 use std::io::BufReader;
 pub mod point;
 
-#[allow(dead_code)]
 pub fn turn(facing: &i32, ch: char) -> Result<i32, String> {
     let result = match ch {
         'L' => (*facing + 3) % 4,
@@ -19,7 +18,6 @@ pub fn turn(facing: &i32, ch: char) -> Result<i32, String> {
     Ok(result)
 }
 
-#[allow(dead_code)]
 pub fn move_point(p: &Point, ch: char, steps: i32) -> Result<Point, String> {
     let mut point = p.clone();
     match ch {
@@ -32,7 +30,6 @@ pub fn move_point(p: &Point, ch: char, steps: i32) -> Result<Point, String> {
     Ok(point)
 }
 
-#[allow(dead_code)]
 pub fn parse_map(fname: &str, discard: &[char]) -> Result<HashMap<Point, char>, Box<Error>> {
     let mut keypad = HashMap::new();
     let mut x = 0i32;
@@ -57,7 +54,6 @@ pub struct Matrix {
 }
 
 impl Matrix {
-    #[allow(dead_code)]
     pub fn parse_matrix(fname: &str) -> Result<Matrix, Box<Error>> {
         let mut mat: Vec<Vec<String>> = vec![];
         let file = File::open(fname)?;
@@ -68,7 +64,6 @@ impl Matrix {
         Ok(Matrix { data: mat })
     }
 
-    #[allow(dead_code)]
     fn column(&self, col: usize) -> Option<Vec<String>> {
         let mut result: Vec<String> = vec![];
         for row in self.data.iter() {
@@ -80,12 +75,10 @@ impl Matrix {
         }
     }
 
-    #[allow(dead_code)]
     pub fn rows(&self) -> Vec<Vec<String>> {
         self.data.clone()
     }
 
-    #[allow(dead_code)]
     pub fn cols(&self) -> Option<Vec<Vec<String>>> {
         let mut result: Vec<Vec<String>> = vec![];
         for c in 0..self.data[0].len() {
@@ -96,7 +89,6 @@ impl Matrix {
 }
 
 /// palindrome predicate, where e.g. ABA,ABBA are palindromes but AAA or AA are not
-#[allow(dead_code)]
 pub fn is_palindrome(word: &str) -> bool {
     match word.len() {
         0 => false,
@@ -109,7 +101,6 @@ pub fn is_palindrome(word: &str) -> bool {
 }
 
 /// partitions s to step size chunks. chunks may overlap.
-#[allow(dead_code)]
 pub fn partition_by(s: &str, step: usize) -> Vec<String> {
     if step >= s.len() {
         return vec![String::from(s)];
@@ -122,7 +113,6 @@ pub fn partition_by(s: &str, step: usize) -> Vec<String> {
     result
 }
 
-#[allow(dead_code)]
 pub fn parse_ints(s: &str) -> Vec<isize> {
     let re = Regex::new(r"(-?\d+)").expect("invalid regex");
     let nums: Vec<isize> = re
