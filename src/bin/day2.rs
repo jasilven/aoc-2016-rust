@@ -1,5 +1,6 @@
 mod aoc;
-use aoc::*;
+use aoc::parse_map;
+use aoc::point::move_point;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufRead;

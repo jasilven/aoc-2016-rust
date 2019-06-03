@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 extern crate regex;
+pub mod point;
 use point::Point;
 use regex::Regex;
 use std::collections::HashMap;
@@ -7,7 +8,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
-pub mod point;
 
 pub fn turn(facing: &i32, ch: char) -> Result<i32, String> {
     let result = match ch {
@@ -16,18 +16,6 @@ pub fn turn(facing: &i32, ch: char) -> Result<i32, String> {
         _ => return Err(format!("unknown turn '{}'", ch)),
     };
     Ok(result)
-}
-
-pub fn move_point(p: &Point, ch: char, steps: i32) -> Result<Point, String> {
-    let mut point = p.clone();
-    match ch {
-        'U' | 'N' => point.y -= steps,
-        'R' | 'E' => point.x += steps,
-        'D' | 'S' => point.y += steps,
-        'L' | 'W' => point.x -= steps,
-        _ => return Err(format!("unknown direction: {}", ch)),
-    };
-    Ok(point)
 }
 
 pub fn parse_map(fname: &str, discard: &[char]) -> Result<HashMap<Point, char>, Box<Error>> {
@@ -142,46 +130,6 @@ mod tests {
         assert_eq!(1, turn(&2, 'L').unwrap());
         assert_eq!(0, turn(&3, 'R').unwrap());
         assert_eq!(2, turn(&3, 'L').unwrap());
-    }
-
-    #[test]
-    fn test_move_point() {
-        assert_eq!(
-            Point { x: 0, y: -1 },
-            move_point(&Point { x: 0, y: 0 }, 'N', 1).unwrap()
-        );
-        assert_eq!(
-            Point { x: 0, y: -2 },
-            move_point(&Point { x: 0, y: 0 }, 'U', 2).unwrap()
-        );
-        assert_eq!(
-            Point { x: 1, y: 0 },
-            move_point(&Point { x: 0, y: 0 }, 'R', 1).unwrap()
-        );
-        assert_eq!(
-            Point { x: 2, y: 0 },
-            move_point(&Point { x: 0, y: 0 }, 'E', 2).unwrap()
-        );
-        assert_eq!(
-            Point { x: 0, y: 1 },
-            move_point(&Point { x: 0, y: 0 }, 'D', 1).unwrap()
-        );
-        assert_eq!(
-            Point { x: 0, y: 2 },
-            move_point(&Point { x: 0, y: 0 }, 'S', 2).unwrap()
-        );
-        assert_eq!(
-            Point { x: -1, y: 0 },
-            move_point(&Point { x: 0, y: 0 }, 'L', 1).unwrap()
-        );
-        assert_eq!(
-            Point { x: -2, y: 0 },
-            move_point(&Point { x: 0, y: 0 }, 'W', 2).unwrap()
-        );
-        assert_eq!(
-            Point { x: 0, y: 0 },
-            move_point(&Point { x: 0, y: 0 }, 'L', 0).unwrap()
-        );
     }
 
     #[test]

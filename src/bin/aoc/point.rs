@@ -77,4 +77,43 @@ mod tests {
         assert_eq!(3, origin.manh_dist(&Point { x: 3, y: 0 }));
     }
 
+    #[test]
+    fn test_move_point() {
+        assert_eq!(
+            Point { x: 0, y: -1 },
+            move_point(&Point { x: 0, y: 0 }, 'N', 1).unwrap()
+        );
+        assert_eq!(
+            Point { x: 0, y: -2 },
+            move_point(&Point { x: 0, y: 0 }, 'U', 2).unwrap()
+        );
+        assert_eq!(
+            Point { x: 1, y: 0 },
+            move_point(&Point { x: 0, y: 0 }, 'R', 1).unwrap()
+        );
+        assert_eq!(
+            Point { x: 2, y: 0 },
+            move_point(&Point { x: 0, y: 0 }, 'E', 2).unwrap()
+        );
+        assert_eq!(
+            Point { x: 0, y: 1 },
+            move_point(&Point { x: 0, y: 0 }, 'D', 1).unwrap()
+        );
+        assert_eq!(
+            Point { x: 0, y: 2 },
+            move_point(&Point { x: 0, y: 0 }, 'S', 2).unwrap()
+        );
+        assert_eq!(
+            Point { x: -1, y: 0 },
+            move_point(&Point { x: 0, y: 0 }, 'L', 1).unwrap()
+        );
+        assert_eq!(
+            Point { x: -2, y: 0 },
+            move_point(&Point { x: 0, y: 0 }, 'W', 2).unwrap()
+        );
+        assert_eq!(
+            Point { x: 0, y: 0 },
+            move_point(&Point { x: 0, y: 0 }, 'L', 0).unwrap()
+        );
+    }
 }
