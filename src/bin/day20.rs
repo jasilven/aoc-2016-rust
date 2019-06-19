@@ -16,7 +16,7 @@ fn parse_input(fname: &str) -> Vec<(usize, usize)> {
     result
 }
 
-fn get_sorted_cands(ranges: &Vec<(usize, usize)>) -> Vec<usize> {
+fn get_sorted_cands(ranges: &[(usize, usize)]) -> Vec<usize> {
     let mut cands: Vec<usize> = ranges
         .iter()
         .map(|(_, hi)| {
@@ -31,7 +31,7 @@ fn get_sorted_cands(ranges: &Vec<(usize, usize)>) -> Vec<usize> {
     cands
 }
 
-fn solve1(ranges: &Vec<(usize, usize)>) -> usize {
+fn solve1(ranges: &[(usize, usize)]) -> usize {
     let mut result = 0;
     for cand in get_sorted_cands(&ranges) {
         if ranges.iter().all(|(lo, hi)| (&cand < lo) | (&cand > hi)) {
@@ -43,7 +43,7 @@ fn solve1(ranges: &Vec<(usize, usize)>) -> usize {
 }
 
 fn split_by_overlap(
-    ranges: &Vec<(usize, usize)>,
+    ranges: &[(usize, usize)],
     range: &(usize, usize),
 ) -> (Vec<(usize, usize)>, Vec<(usize, usize)>) {
     let mut overlap = vec![];
@@ -59,7 +59,7 @@ fn split_by_overlap(
     (overlap, non_overlap)
 }
 
-fn combine_ranges(ranges: &Vec<(usize, usize)>) -> Vec<(usize, usize)> {
+fn combine_ranges(ranges: &[(usize, usize)]) -> Vec<(usize, usize)> {
     let mut result: Vec<(usize, usize)> = vec![];
     for cur_range in ranges.iter() {
         let (overlap, non_overlap) = split_by_overlap(ranges, cur_range);
@@ -76,11 +76,10 @@ fn combine_ranges(ranges: &Vec<(usize, usize)>) -> Vec<(usize, usize)> {
     result
 }
 
-fn solve2(ranges: &Vec<(usize, usize)>) -> usize {
+fn solve2(ranges: &[(usize, usize)]) -> usize {
     let mut tmp_ranges = ranges.to_owned();
     loop {
         let new_ranges = combine_ranges(&tmp_ranges);
-        //println!("ranges len: {}", new_ranges.len());
         if new_ranges.is_empty() {
             break;
         } else {
