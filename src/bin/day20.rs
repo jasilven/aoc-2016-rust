@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
-const MAXIP: usize = 4294967295;
+const MAXIP: usize = 4_294_967_295;
 
 fn parse_input(fname: &str) -> Vec<(usize, usize)> {
     let mut result: Vec<(usize, usize)> = vec![];
@@ -42,9 +42,52 @@ fn solve1(ranges: &Vec<(usize, usize)>) -> usize {
     result
 }
 
+fn split_by_overlap(
+    ranges: &Vec<(usize, usize)>,
+    range: &(usize, usize),
+) -> (Vec<(usize, usize)>, Vec<(usize, usize)>) {
+    let mut overlap = vec![];
+    let mut non_overlap = vec![];
+
+    for r in ranges {
+        if ((r.0 >= range.0) & (r.0 <= range.1)) | ((r.1 >= range.0) & (r.1 <= range.1)) {
+            overlap.push(r.clone());
+        } else {
+            non_overlap.push(r.clone());
+        }
+    }
+    (overlap, non_overlap)
+}
+
+fn combine_ranges(ranges: &Vec<(usize, usize)>) -> Vec<(usize, usize)> {
+    let mut result: Vec<(usize, usize)> = vec![];
+    for cur_range in ranges.iter() {
+        let (overlap, non_overlap) = split_by_overlap(ranges, cur_range);
+        if overlap.len() > 1 {
+            let lowest = overlap.iter().min_by(|r1, r2| r1.0.cmp(&r2.0)).unwrap();
+            let highest = overlap.iter().max_by(|r1, r2| r1.1.cmp(&r2.1)).unwrap();
+            result.push((lowest.0, highest.1));
+            for r in non_overlap {
+                result.push(r);
+            }
+            break;
+        }
+    }
+    result
+}
+
 fn solve2(ranges: &Vec<(usize, usize)>) -> usize {
-    let blocked_cnt = ranges.iter().fold(0, |acc, (lo, hi)| acc + hi - lo + 1);
-    println!("{}", &blocked_cnt);
+    let mut tmp_ranges = ranges.to_owned();
+    loop {
+        let new_ranges = combine_ranges(&tmp_ranges);
+        //println!("ranges len: {}", new_ranges.len());
+        if new_ranges.is_empty() {
+            break;
+        } else {
+            tmp_ranges = new_ranges;
+        }
+    }
+    let blocked_cnt = tmp_ranges.iter().fold(0, |acc, (lo, hi)| acc + hi - lo + 1);
     MAXIP - blocked_cnt + 1
 }
 
@@ -53,6 +96,7 @@ fn main() {
     println!("Part 1: {:?}", solve1(&ranges));
     // correct answer: 14975795
     println!("Part 2: {:?}", solve2(&ranges));
+    // correct answer: 101
 }
 
 #[cfg(test)]
