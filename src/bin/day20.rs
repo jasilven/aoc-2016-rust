@@ -7,7 +7,7 @@ use std::io::BufReader;
 const MAXIP: usize = 4_294_967_295;
 
 fn parse_input(fname: &str) -> Vec<(usize, usize)> {
-    let mut result: Vec<(usize, usize)> = vec![];
+    let mut result = vec![];
     for line in BufReader::new(File::open(fname).unwrap()).lines() {
         let line = line.unwrap().replace("-", " ");
         let ints = parse_ints(&line);
@@ -19,13 +19,7 @@ fn parse_input(fname: &str) -> Vec<(usize, usize)> {
 fn get_sorted_cands(ranges: &[(usize, usize)]) -> Vec<usize> {
     let mut cands: Vec<usize> = ranges
         .iter()
-        .map(|(_, hi)| {
-            if hi < &MAXIP {
-                return hi + 1 as usize;
-            } else {
-                return *hi;
-            }
-        })
+        .map(|(_, hi)| if hi < &MAXIP { hi + 1 as usize } else { *hi })
         .collect();
     cands.sort();
     cands
@@ -48,7 +42,6 @@ fn split_by_overlap(
 ) -> (Vec<(usize, usize)>, Vec<(usize, usize)>) {
     let mut overlap = vec![];
     let mut non_overlap = vec![];
-
     for r in ranges {
         if ((r.0 >= range.0) & (r.0 <= range.1)) | ((r.1 >= range.0) & (r.1 <= range.1)) {
             overlap.push(r.clone());
@@ -60,7 +53,7 @@ fn split_by_overlap(
 }
 
 fn combine_ranges(ranges: &[(usize, usize)]) -> Vec<(usize, usize)> {
-    let mut result: Vec<(usize, usize)> = vec![];
+    let mut result = vec![];
     for cur_range in ranges.iter() {
         let (overlap, non_overlap) = split_by_overlap(ranges, cur_range);
         if overlap.len() > 1 {
