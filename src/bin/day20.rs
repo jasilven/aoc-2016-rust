@@ -4,8 +4,6 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
-const MAXIP: usize = 4_294_967_295;
-
 fn parse_input(fname: &str) -> Vec<(usize, usize)> {
     let mut result = vec![];
     for line in BufReader::new(File::open(fname).unwrap()).lines() {
@@ -16,19 +14,19 @@ fn parse_input(fname: &str) -> Vec<(usize, usize)> {
     result
 }
 
-fn get_sorted_cands(ranges: &[(usize, usize)]) -> Vec<usize> {
+fn get_sorted_cands(ranges: &[(usize, usize)], maxip: usize) -> Vec<usize> {
     let mut cands: Vec<usize> = ranges
         .iter()
-        .map(|(_, hi)| if hi < &MAXIP { hi + 1 as usize } else { *hi })
+        .map(|(_, hi)| if *hi < maxip { hi + 1 as usize } else { *hi })
         .collect();
     cands.sort();
     cands
 }
 
-fn solve1(ranges: &[(usize, usize)]) -> usize {
+fn solve1(ranges: &[(usize, usize)], maxip: usize) -> usize {
     let mut result = 0;
-    for cand in get_sorted_cands(&ranges) {
-        if ranges.iter().all(|(lo, hi)| (&cand < lo) | (&cand > hi)) {
+    for cand in get_sorted_cands(&ranges, maxip) {
+        if ranges.iter().all(|(lo, hi)| (cand < *lo) | (cand > *hi)) {
             result = cand;
             break;
         }
@@ -69,7 +67,7 @@ fn combine_ranges(ranges: &[(usize, usize)]) -> Vec<(usize, usize)> {
     result
 }
 
-fn solve2(ranges: &[(usize, usize)]) -> usize {
+fn solve2(ranges: &[(usize, usize)], maxip: usize) -> usize {
     let mut tmp_ranges = ranges.to_owned();
     loop {
         let new_ranges = combine_ranges(&tmp_ranges);
@@ -80,14 +78,15 @@ fn solve2(ranges: &[(usize, usize)]) -> usize {
         }
     }
     let blocked_cnt = tmp_ranges.iter().fold(0, |acc, (lo, hi)| acc + hi - lo + 1);
-    MAXIP - blocked_cnt + 1
+    maxip - blocked_cnt + 1
 }
 
 fn main() {
+    let maxip = 4294967295;
     let ranges = parse_input("resources/day20-input.txt");
-    println!("Part 1: {:?}", solve1(&ranges));
+    println!("Part 1: {:?}", solve1(&ranges, maxip));
     // correct answer: 14975795
-    println!("Part 2: {:?}", solve2(&ranges));
+    println!("Part 2: {:?}", solve2(&ranges, maxip));
     // correct answer: 101
 }
 
@@ -98,6 +97,12 @@ mod tests {
     #[test]
     fn test_solve1() {
         let ranges = parse_input("resources/day20-test-input.txt");
-        assert_eq!(3, solve1(&ranges));
+        assert_eq!(3, solve1(&ranges, 9));
+    }
+
+    #[test]
+    fn test_solve2() {
+        let ranges = parse_input("resources/day20-test-input.txt");
+        assert_eq!(2, solve2(&ranges, 9));
     }
 }
