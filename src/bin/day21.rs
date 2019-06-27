@@ -1,6 +1,7 @@
 mod aoc;
 use aoc::parse_ints;
 use permutohedron::Heap;
+use rayon::prelude::*;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -77,24 +78,23 @@ fn move_positions(word: &mut String, args: &[isize]) {
 fn solve1(ops: &[String], word: &str) -> String {
     let mut w = word.to_owned();
     for op in ops {
-        match true {
-            true if op.starts_with("swap position") => swap_pos(&mut w, &parse_ints(&op)),
-            true if op.starts_with("swap letter") => swap_letters(&mut w, &op[12..13], &op[26..27]),
-            true if op.starts_with("rotate left") => rotate_left(&mut w, &parse_ints(&op)),
-            true if op.starts_with("rotate right") => rotate_right(&mut w, &parse_ints(&op)),
-            true if op.starts_with("rotate based") => {
+        match op {
+            _ if op.starts_with("swap position") => swap_pos(&mut w, &parse_ints(&op)),
+            _ if op.starts_with("swap letter") => swap_letters(&mut w, &op[12..13], &op[26..27]),
+            _ if op.starts_with("rotate left") => rotate_left(&mut w, &parse_ints(&op)),
+            _ if op.starts_with("rotate right") => rotate_right(&mut w, &parse_ints(&op)),
+            _ if op.starts_with("rotate based") => {
                 rotate_based_pos(&mut w, op.chars().last().unwrap())
             }
-            true if op.starts_with("reverse positions") => {
-                reverse_positions(&mut w, &parse_ints(&op))
-            }
-            true if op.starts_with("move position") => move_positions(&mut w, &parse_ints(&op)),
+            _ if op.starts_with("reverse positions") => reverse_positions(&mut w, &parse_ints(&op)),
+            _ if op.starts_with("move position") => move_positions(&mut w, &parse_ints(&op)),
             _ => panic!("unknown operation"),
         };
     }
     w
 }
 
+#[allow(dead_code)]
 fn solve2(ops: &[String], word: &str, target: &str) -> String {
     let target = target.to_owned();
     let mut data: Vec<char> = vec![];
@@ -112,11 +112,35 @@ fn solve2(ops: &[String], word: &str, target: &str) -> String {
     "not found".to_owned()
 }
 
+fn all_permutations(word: &str) -> Vec<String> {
+    let mut result = vec![];
+    let mut data: Vec<char> = vec![];
+    for ch in word.chars() {
+        data.push(ch);
+    }
+    let heap = Heap::new(&mut data);
+    for perm in heap {
+        let s: String = perm.iter().collect();
+        result.push(s);
+    }
+    result
+}
+
+fn solve2_parallel(ops: &[String], word: &str, target: &str) -> String {
+    all_permutations(word)
+        .par_iter()
+        .find_first(|s| solve1(ops, s) == *target)
+        .unwrap()
+        .clone()
+}
+
 fn main() {
     let ops = parse_operations("resources/day21-input.txt");
     println!("Part 1: {}", solve1(&ops, "abcdefgh"));
     // correct answer: dbfgaehc
-    println!("Part 2: {}", solve2(&ops, "abcdefgh", "fbgdceah"));
+
+    //println!("Part 2: {}", solve2(&ops, "abcdefgh", "fbgdceah"));
+    println!("Part 2: {}", solve2_parallel(&ops, "abcdefgh", "fbgdceah"));
     // correct answer: aghfcdeb
 }
 
