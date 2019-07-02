@@ -1,4 +1,3 @@
-extern crate regex;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
@@ -28,9 +27,12 @@ fn checksum(s: &str) -> String {
         *counter += 1;
     }
     let mut kvs: Vec<(&char, &i32)> = hm.iter().collect();
-    kvs.sort_by(|a, b| match a.1 == b.1 {
-        true => a.0.cmp(b.0),
-        _ => a.1.cmp(b.1).reverse(),
+    kvs.sort_by(|a, b| {
+        if a.1 == b.1 {
+            a.0.cmp(b.0)
+        } else {
+            a.1.cmp(b.1).reverse()
+        }
     });
     kvs.iter()
         .take(5)
@@ -42,7 +44,7 @@ fn solve1(input: &Vec<(String, String, String)>) -> i32 {
         .iter()
         .filter(|x| checksum(&x.0) == x.2)
         .map(|x| x.1.parse::<i32>().unwrap())
-        .fold(0, |acc, i| acc + i)
+        .sum()
 }
 
 fn decrypt(s: &str, n: u32) -> String {

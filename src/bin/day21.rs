@@ -15,45 +15,40 @@ fn parse_operations(fname: &str) -> Vec<String> {
     result
 }
 
-fn swap_pos(word: &mut String, args: &[isize]) {
+fn swap_pos(word: &mut [u8], args: &[isize]) {
     let x = args[0] as usize;
     let y = args[1] as usize;
-    let x_str = &word[x..=x].to_owned();
-    let y_str = &word[y..=y].to_owned();
-    word.replace_range(x..=x, y_str);
-    word.replace_range(y..=y, x_str);
+    word.swap(x, y);
 }
 
-fn swap_letters(word: &mut String, x: &str, y: &str) {
-    let mut tmp = word.replace(x, "#");
-    tmp = tmp.replace(y, x);
-    tmp = tmp.replace("#", y);
-    word.clear();
-    word.push_str(&tmp);
+fn swap_letters(word: &mut [u8], x: u8, y: u8) {
+    for ch in word {
+        if *ch == x {
+            *ch = y;
+        } else if *ch == y {
+            *ch = x;
+        }
+    }
 }
 
-fn rotate_left(word: &mut String, args: &[isize]) {
+fn rotate_left(word: &mut [u8], args: &[isize]) {
     let cnt = (args[0] as usize) % word.len();
-    let (first, last) = word.split_at(cnt);
-    let mut tmp = "".to_owned();
-    tmp.push_str(&last);
-    tmp.push_str(&first);
-    word.clear();
-    word.push_str(&tmp);
+    word.rotate_left(cnt);
 }
 
-fn rotate_right(word: &mut String, args: &[isize]) {
-    let cnt = (word.len() - (args[0] as usize) % word.len()) as usize;
-    let (first, last) = word.split_at(cnt);
-    let mut tmp = "".to_owned();
-    tmp.push_str(&last);
-    tmp.push_str(&first);
-    word.clear();
-    word.push_str(&tmp);
+fn rotate_right(word: &mut [u8], args: &[isize]) {
+    let cnt = (args[0] as usize) % word.len();
+    word.rotate_right(cnt);
 }
 
-fn rotate_based_pos(word: &mut String, arg: char) {
-    let index = word.find(arg).unwrap();
+fn rotate_based_pos(word: &mut [u8], arg: u8) {
+    let mut index = 0;
+    for i in 0..word.len() {
+        if arg == word[i] {
+            index = i;
+            break;
+        }
+    }
     let mut cnt = index + 1;
     if index >= 4 {
         cnt += 1;
@@ -61,46 +56,46 @@ fn rotate_based_pos(word: &mut String, arg: char) {
     rotate_right(word, &[cnt as isize]);
 }
 
-fn reverse_positions(word: &mut String, args: &[isize]) {
+fn reverse_positions(word: &mut [u8], args: &[isize]) {
     let x = args[0] as usize;
     let y = args[1] as usize;
-    let tmp: String = word[x..=y].to_owned().chars().rev().collect();
-    word.replace_range(x..=y, &tmp);
+    word[x..=y].reverse();
 }
 
-fn move_positions(word: &mut String, args: &[isize]) {
+fn move_positions(word: &mut [u8], args: &[isize]) {
     let x = args[0] as usize;
     let y = args[1] as usize;
-    let ch = word.remove(x);
-    word.insert(y, ch);
+    let mut tmp = word.to_vec();
+    let ch = tmp.remove(x);
+    tmp.insert(y, ch);
+    word.clone_from_slice(&tmp);
 }
 
 fn solve1(ops: &[String], word: &str) -> String {
-    let mut w = word.to_owned();
+    let mut w: Vec<u8> = word.bytes().collect();
     for op in ops {
         match op {
             _ if op.starts_with("swap position") => swap_pos(&mut w, &parse_ints(&op)),
-            _ if op.starts_with("swap letter") => swap_letters(&mut w, &op[12..13], &op[26..27]),
+            _ if op.starts_with("swap letter") => {
+                swap_letters(&mut w, op.as_bytes()[12], op.as_bytes()[26])
+            }
             _ if op.starts_with("rotate left") => rotate_left(&mut w, &parse_ints(&op)),
             _ if op.starts_with("rotate right") => rotate_right(&mut w, &parse_ints(&op)),
             _ if op.starts_with("rotate based") => {
-                rotate_based_pos(&mut w, op.chars().last().unwrap())
+                rotate_based_pos(&mut w, op.chars().last().unwrap() as u8)
             }
             _ if op.starts_with("reverse positions") => reverse_positions(&mut w, &parse_ints(&op)),
             _ if op.starts_with("move position") => move_positions(&mut w, &parse_ints(&op)),
             _ => panic!("unknown operation"),
         };
     }
-    w
+    w.iter().map(|c| *c as char).collect()
 }
 
 #[allow(dead_code)]
 fn solve2(ops: &[String], word: &str, target: &str) -> String {
     let target = target.to_owned();
-    let mut data: Vec<char> = vec![];
-    for ch in word.chars() {
-        data.push(ch);
-    }
+    let mut data: Vec<char> = word.chars().collect();
     let heap = Heap::new(&mut data);
     for perm in heap {
         let s: String = perm.iter().collect();
@@ -138,8 +133,6 @@ fn main() {
     let ops = parse_operations("resources/day21-input.txt");
     println!("Part 1: {}", solve1(&ops, "abcdefgh"));
     // correct answer: dbfgaehc
-
-    //println!("Part 2: {}", solve2(&ops, "abcdefgh", "fbgdceah"));
     println!("Part 2: {}", solve2_parallel(&ops, "abcdefgh", "fbgdceah"));
     // correct answer: aghfcdeb
 }
@@ -150,54 +143,63 @@ mod tests {
 
     #[test]
     fn test_swap_pos() {
-        let mut word = String::from("abc");
+        let mut a = vec!['a' as u8, 'b' as u8, 'c' as u8];
+        let b = vec!['c' as u8, 'b' as u8, 'a' as u8];
         let args = vec![0, 2];
-        swap_pos(&mut word, &args);
-        assert_eq!("cba", word);
+        swap_pos(&mut a, &args);
+        assert_eq!(a, b);
     }
 
     #[test]
     fn test_swap_letters() {
-        let mut word = String::from("abc");
-        swap_letters(&mut word, "a", "c");
-        assert_eq!("cba", word);
+        let mut a = vec!['a' as u8, 'b' as u8, 'c' as u8];
+        let b = vec!['c' as u8, 'b' as u8, 'a' as u8];
+        swap_letters(&mut a, 'a' as u8, 'c' as u8);
+        assert_eq!(a, b);
     }
 
     #[test]
     fn test_rotate_left() {
-        let mut word = String::from("aba");
-        rotate_left(&mut word, &vec![1]);
-        assert_eq!("baa", word);
+        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
+        let b = vec!['b' as u8, 'a' as u8, 'a' as u8];
+        rotate_left(&mut a, &vec![1]);
+        assert_eq!(a, b);
 
-        word = String::from("aba");
-        rotate_left(&mut word, &vec![2]);
-        assert_eq!("aab", word);
+        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
+        let b = vec!['a' as u8, 'a' as u8, 'b' as u8];
+        rotate_left(&mut a, &vec![2]);
+        assert_eq!(a, b);
 
-        word = String::from("aba");
-        rotate_left(&mut word, &vec![3]);
-        assert_eq!("aba", word);
+        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
+        let b = vec!['a' as u8, 'b' as u8, 'a' as u8];
+        rotate_left(&mut a, &vec![3]);
+        assert_eq!(a, b);
     }
 
     #[test]
     fn test_rotate_right() {
-        let mut word = String::from("aba");
-        rotate_right(&mut word, &vec![1]);
-        assert_eq!("aab", word);
+        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
+        let b = vec!['a' as u8, 'a' as u8, 'b' as u8];
+        rotate_right(&mut a, &vec![1]);
+        assert_eq!(a, b);
 
-        word = String::from("aba");
-        rotate_right(&mut word, &vec![2]);
-        assert_eq!("baa", word);
+        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
+        let b = vec!['b' as u8, 'a' as u8, 'a' as u8];
+        rotate_right(&mut a, &vec![2]);
+        assert_eq!(a, b);
 
-        word = String::from("aba");
-        rotate_right(&mut word, &vec![3]);
-        assert_eq!("aba", word);
+        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
+        let b = vec!['a' as u8, 'b' as u8, 'a' as u8];
+        rotate_right(&mut a, &vec![3]);
+        assert_eq!(a, b);
     }
 
     #[test]
     fn test_reverse_positions() {
-        let mut word = String::from("12345");
-        reverse_positions(&mut word, &vec![0, 2]);
-        assert_eq!("32145", word);
+        let mut a = vec!['a' as u8, 'b' as u8, 'c' as u8];
+        let b = vec!['c' as u8, 'b' as u8, 'a' as u8];
+        reverse_positions(&mut a, &vec![0, 2]);
+        assert_eq!(a, b);
     }
 
     #[test]
