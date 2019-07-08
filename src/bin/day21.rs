@@ -6,21 +6,39 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
-fn parse_operations(fname: &str) -> Vec<String> {
+enum Op {
+    SwapPos((usize, usize)),
+    SwapLet((u8, u8)),
+    RotLeft(usize),
+    RotRight(usize),
+    RotBased(u8),
+    ReversePos((usize, usize)),
+    MovePos((usize, usize)),
+}
+
+fn parse_operations(fname: &str) -> Vec<Op> {
     let mut result = vec![];
     let file = File::open(fname).expect("unable to open file");
     for line in BufReader::new(file).lines() {
-        result.push(line.unwrap());
+        let line = line.unwrap();
+        let is: Vec<usize> = parse_ints(&line).iter().map(move |x| *x as usize).collect();
+        match line {
+            _ if line.starts_with("swap pos") => result.push(Op::SwapPos((is[0], is[1]))),
+            _ if line.starts_with("swap let") => {
+                result.push(Op::SwapLet((line.as_bytes()[12], line.as_bytes()[26])))
+            }
+            _ if line.starts_with("rotate l") => result.push(Op::RotLeft(is[0])),
+            _ if line.starts_with("rotate r") => result.push(Op::RotRight(is[0])),
+            _ if line.starts_with("rotate b") => {
+                result.push(Op::RotBased(line.chars().last().unwrap() as u8))
+            }
+            _ if line.starts_with("reverse pos") => result.push(Op::ReversePos((is[0], is[1]))),
+            _ if line.starts_with("move pos") => result.push(Op::MovePos((is[0], is[1]))),
+            _ => panic!("unknown operation"),
+        };
     }
     result
 }
-
-fn swap_pos(word: &mut [u8], args: &[isize]) {
-    let x = args[0] as usize;
-    let y = args[1] as usize;
-    word.swap(x, y);
-}
-
 fn swap_letters(word: &mut [u8], x: u8, y: u8) {
     for ch in word {
         if *ch == x {
@@ -29,16 +47,6 @@ fn swap_letters(word: &mut [u8], x: u8, y: u8) {
             *ch = x;
         }
     }
-}
-
-fn rotate_left(word: &mut [u8], args: &[isize]) {
-    let cnt = (args[0] as usize) % word.len();
-    word.rotate_left(cnt);
-}
-
-fn rotate_right(word: &mut [u8], args: &[isize]) {
-    let cnt = (args[0] as usize) % word.len();
-    word.rotate_right(cnt);
 }
 
 fn rotate_based_pos(word: &mut [u8], arg: u8) {
@@ -53,47 +61,34 @@ fn rotate_based_pos(word: &mut [u8], arg: u8) {
     if index >= 4 {
         cnt += 1;
     }
-    rotate_right(word, &[cnt as isize]);
+    word.rotate_right(cnt % word.len());
 }
 
-fn reverse_positions(word: &mut [u8], args: &[isize]) {
-    let x = args[0] as usize;
-    let y = args[1] as usize;
-    word[x..=y].reverse();
-}
-
-fn move_positions(word: &mut [u8], args: &[isize]) {
-    let x = args[0] as usize;
-    let y = args[1] as usize;
+fn move_positions(word: &mut [u8], x: usize, y: usize) {
     let mut tmp = word.to_vec();
     let ch = tmp.remove(x);
     tmp.insert(y, ch);
     word.clone_from_slice(&tmp);
 }
 
-fn solve1(ops: &[String], word: &str) -> String {
+fn solve1(ops: &[Op], word: &str) -> String {
     let mut w: Vec<u8> = word.bytes().collect();
     for op in ops {
         match op {
-            _ if op.starts_with("swap position") => swap_pos(&mut w, &parse_ints(&op)),
-            _ if op.starts_with("swap letter") => {
-                swap_letters(&mut w, op.as_bytes()[12], op.as_bytes()[26])
-            }
-            _ if op.starts_with("rotate left") => rotate_left(&mut w, &parse_ints(&op)),
-            _ if op.starts_with("rotate right") => rotate_right(&mut w, &parse_ints(&op)),
-            _ if op.starts_with("rotate based") => {
-                rotate_based_pos(&mut w, op.chars().last().unwrap() as u8)
-            }
-            _ if op.starts_with("reverse positions") => reverse_positions(&mut w, &parse_ints(&op)),
-            _ if op.starts_with("move position") => move_positions(&mut w, &parse_ints(&op)),
-            _ => panic!("unknown operation"),
+            Op::SwapPos((x, y)) => w.swap(*x, *y),
+            Op::SwapLet((x, y)) => swap_letters(&mut w, *x, *y),
+            Op::RotLeft(x) => w.rotate_left(*x),
+            Op::RotRight(x) => w.rotate_right(*x),
+            Op::RotBased(x) => rotate_based_pos(&mut w, *x),
+            Op::ReversePos((x, y)) => w[*x..=*y].reverse(),
+            Op::MovePos((x, y)) => move_positions(&mut w, *x, *y),
         };
     }
     w.iter().map(|c| *c as char).collect()
 }
 
 #[allow(dead_code)]
-fn solve2(ops: &[String], word: &str, target: &str) -> String {
+fn solve2(ops: &[Op], word: &str, target: &str) -> String {
     let target = target.to_owned();
     let mut data: Vec<char> = word.chars().collect();
     let heap = Heap::new(&mut data);
@@ -121,7 +116,7 @@ fn all_permutations(word: &str) -> Vec<String> {
     result
 }
 
-fn solve2_parallel(ops: &[String], word: &str, target: &str) -> String {
+fn solve2_parallel(ops: &[Op], word: &str, target: &str) -> String {
     all_permutations(word)
         .par_iter()
         .find_first(|s| solve1(ops, s) == *target)
@@ -142,63 +137,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_swap_pos() {
-        let mut a = vec!['a' as u8, 'b' as u8, 'c' as u8];
-        let b = vec!['c' as u8, 'b' as u8, 'a' as u8];
-        let args = vec![0, 2];
-        swap_pos(&mut a, &args);
-        assert_eq!(a, b);
-    }
-
-    #[test]
     fn test_swap_letters() {
         let mut a = vec!['a' as u8, 'b' as u8, 'c' as u8];
         let b = vec!['c' as u8, 'b' as u8, 'a' as u8];
         swap_letters(&mut a, 'a' as u8, 'c' as u8);
-        assert_eq!(a, b);
-    }
-
-    #[test]
-    fn test_rotate_left() {
-        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
-        let b = vec!['b' as u8, 'a' as u8, 'a' as u8];
-        rotate_left(&mut a, &vec![1]);
-        assert_eq!(a, b);
-
-        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
-        let b = vec!['a' as u8, 'a' as u8, 'b' as u8];
-        rotate_left(&mut a, &vec![2]);
-        assert_eq!(a, b);
-
-        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
-        let b = vec!['a' as u8, 'b' as u8, 'a' as u8];
-        rotate_left(&mut a, &vec![3]);
-        assert_eq!(a, b);
-    }
-
-    #[test]
-    fn test_rotate_right() {
-        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
-        let b = vec!['a' as u8, 'a' as u8, 'b' as u8];
-        rotate_right(&mut a, &vec![1]);
-        assert_eq!(a, b);
-
-        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
-        let b = vec!['b' as u8, 'a' as u8, 'a' as u8];
-        rotate_right(&mut a, &vec![2]);
-        assert_eq!(a, b);
-
-        let mut a = vec!['a' as u8, 'b' as u8, 'a' as u8];
-        let b = vec!['a' as u8, 'b' as u8, 'a' as u8];
-        rotate_right(&mut a, &vec![3]);
-        assert_eq!(a, b);
-    }
-
-    #[test]
-    fn test_reverse_positions() {
-        let mut a = vec!['a' as u8, 'b' as u8, 'c' as u8];
-        let b = vec!['c' as u8, 'b' as u8, 'a' as u8];
-        reverse_positions(&mut a, &vec![0, 2]);
         assert_eq!(a, b);
     }
 
