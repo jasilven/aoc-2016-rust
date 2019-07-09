@@ -4,21 +4,6 @@ use std::io::BufRead;
 use std::io::BufReader;
 use std::str::FromStr;
 
-#[derive(Debug)]
-struct AError(String);
-
-impl Error for AError {
-    fn description(&self) -> &str {
-        &self.0
-    }
-}
-
-impl std::fmt::Display for AError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
 #[derive(PartialEq, Debug, Copy, Clone)]
 pub enum Arg {
     Reg(usize),
@@ -65,7 +50,7 @@ pub fn parse_assembunny(fname: &str) -> Result<Vec<OpCode>, Box<Error>> {
             "cpy" => OpCode::CPY(a, b?.parse()?),
             "jnz" => OpCode::JNZ(a, b?.parse()?),
             "tgl" => OpCode::TGL(a),
-            s => return Err(Box::new(AError(format!("invalid opcode: {}", s)))),
+            s => return Err(format!("invalid opcode: {}", s).into()),
         };
         result.push(oc);
     }
