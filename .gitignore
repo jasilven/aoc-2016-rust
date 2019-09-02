@@ -4,3 +4,4 @@ target/**
 target
 */.rustup/**
 tags
+Cargo.lock
