@@ -88,10 +88,10 @@ fn shortest_path_len(
     b: (usize, usize),
 ) -> usize {
     let mut seen = HashSet::new();
-    let mut unseen = BinaryHeap::new();
-    unseen.push(Location { steps: 0, xy: a });
+    let mut unvisited = BinaryHeap::new();
+    unvisited.push(Location { steps: 0, xy: a });
     loop {
-        let location = unseen.pop().unwrap();
+        let location = unvisited.pop().unwrap();
         if location.xy == b {
             return location.steps;
         }
@@ -103,7 +103,7 @@ fn shortest_path_len(
                     steps: location.steps + 1,
                 };
                 seen.insert(l.xy);
-                unseen.push(l);
+                unvisited.push(l);
             }
         }
     }
